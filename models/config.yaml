@@ -1,0 +1,21 @@
+models:
+  openai:
+    system_prompt: "You are a helpful assistant."
+    api_url: "https://api.openai.com/v1/chat/completions"
+    error_message: "API Key not found."
+
+  deepseek:
+    system_prompt: "You are a helpful assistant."
+    api_url: "https://api.deepseek.com/v1/chat/completions"
+    error_message: "API Key not found."
+
+  ollama:
+    system_prompt: "You are a helpful assistant."
+    api_url: "http://ollama:11434/api/chat"
+    error_message: "Ollama configuration error."
+
+errors:
+  base: "Model configuration error."
+  file_not_found: "Ollama is not installed. Please check your setup."
+  list_error: "Error retrieving Ollama models: {error}"
+  api_error: "Error querying {model}: {error}"
