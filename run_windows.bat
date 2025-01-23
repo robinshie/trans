@@ -14,7 +14,10 @@ call conda env update -f environment.yml
 echo 激活conda环境...
 call conda activate trans
 
+echo 设置PYTHONPATH...
+set PYTHONPATH=%PYTHONPATH%;%CD%
+
 echo 启动应用...
-streamlit run views\streamlit_ui.py
+streamlit run base.py
 
 pause

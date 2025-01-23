@@ -15,6 +15,10 @@ echo "激活conda环境..."
 eval "$(conda shell.bash hook)"
 conda activate trans
 
+# 设置PYTHONPATH
+echo "设置PYTHONPATH..."
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 # 运行应用
 echo "启动应用..."
-streamlit run views/streamlit_ui.py
+streamlit run base.py

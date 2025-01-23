@@ -1,5 +1,5 @@
 import streamlit as st
-from langchain.llms import Ollama
+from langchain_ollama import OllamaLLM
 from openai import OpenAI
 import os
 import yaml
@@ -122,8 +122,8 @@ class OllamaModel(BaseModel):
 
     def generate_response(self, prompt: str) -> str:
         try:
-            llm = Ollama(model=self.model_name)
-            return llm(prompt)
+            llm = OllamaLLM(model=self.model_name)
+            return llm.invoke(prompt)
         except Exception as e:
             st.error(ModelConfig.get_error('api_error', model='Ollama', error=str(e)))
             return self.config['error_message']

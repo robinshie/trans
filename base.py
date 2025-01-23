@@ -12,7 +12,7 @@ def conversation_mode(model_choice: Dict[str, str], pdf_text: str) -> None:
     StreamlitUI.render_chat(ChatManager.get_chat_history())
     
     # 输入处理
-    st.text_input("", 
+    st.text_input("Message", 
                  value=st.session_state.user_input,
                  key="user_input",
                  placeholder="Ask about the document...", 
