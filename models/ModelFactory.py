@@ -25,6 +25,11 @@ class ModelConfig:
         """获取模型配置"""
         return cls._config['models'].get(model_type, {})
 
+    @classmethod
+    def get_config(cls) -> Dict:
+        """获取配置"""
+        return cls._config
+
 def query_deepseek(prompt: str, api_key: str, model_name: str) -> str:
     """Query DeepSeek model"""
     try:
@@ -50,23 +55,36 @@ def query_deepseek(prompt: str, api_key: str, model_name: str) -> str:
         return ""
 
 def list_ollama_models() -> List[str]:
-    """List available Ollama models"""
+    """获取可用的Ollama模型列表"""
     try:
-        result = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return [
-            line.split()[0]
-            for line in result.stdout.strip().split("\n")
-            if line.strip() and line.split()[0] != "NAME"
-        ]
-    except FileNotFoundError:
-        return [ModelConfig.get_error('file_not_found')]
-    except subprocess.CalledProcessError as e:
-        return [ModelConfig.get_error('list_error', error=e.stderr.strip())]
+        config = ModelConfig.get_config()
+        if 'ollama' not in config.get('models', {}):
+            st.error(ModelConfig.get_error('file_not_found'))
+            return []
+        
+        models = config['models']['ollama'].get('available_models', [])
+        return models
+    except Exception as e:
+        st.error(ModelConfig.get_error('list_error', error=str(e)))
+        return []
+
+def get_available_models(manufacturer: str) -> List[str]:
+    """获取指定厂商的可用模型列表"""
+    if manufacturer == "Ollama":
+        return list_ollama_models()
+    elif manufacturer == "OpenAI":
+        return ModelConfig.get_model_config('openai').get('available_models', [])
+    elif manufacturer == "DeepSeek":
+        return ModelConfig.get_model_config('deepseek').get('available_models', [])
+    return []
+
+def get_api_key(manufacturer: str) -> Optional[str]:
+    """获取API密钥"""
+    if manufacturer == "OpenAI":
+        return os.getenv("OPENAI_API_KEY")
+    elif manufacturer == "DeepSeek":
+        return os.getenv("DEEPSEEK_API_KEY")
+    return None
 
 def query_gpt4(prompt: str, api_key: str, model_name: str) -> str:
     """Query GPT-4 model from OpenAI"""
@@ -111,7 +129,7 @@ class OpenAIModel(BaseModel):
         self.config = ModelConfig.get_model_config('openai')
 
     def generate_response(self, prompt: str) -> str:
-        api_key = os.environ.get("OPENAI_API_KEY")
+        api_key = get_api_key("OpenAI")
         return query_gpt4(prompt, api_key, self.model_name) if api_key else self.config['error_message']
 
 class OllamaModel(BaseModel):
@@ -135,5 +153,5 @@ class DeepSeekModel(BaseModel):
         self.config = ModelConfig.get_model_config('deepseek')
 
     def generate_response(self, prompt: str) -> str:
-        api_key = os.environ.get("DEEPSEEK_API_KEY")
+        api_key = get_api_key("DeepSeek")
         return query_deepseek(prompt, api_key, self.model_name) if api_key else self.config['error_message']

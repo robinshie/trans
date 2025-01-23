@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from services.file_service import FileService
 from views.html_templates import ChatTemplates
-from models.ModelFactory import list_ollama_models
+from models.ModelFactory import get_available_models, get_api_key, list_ollama_models
 
 class StreamlitUI:
     """Streamlit UI管理类"""
@@ -67,37 +67,22 @@ class StreamlitUI:
             "api_key": None
         }
         
-        if manufacturer == "Ollama":
-            ollama_models = list_ollama_models()
-            model_info["model_name"] = st.sidebar.selectbox(
-                "Select Ollama Model",
-                ollama_models
-            )
-        elif manufacturer == "OpenAI":
-            api_key = os.getenv("OPENAI_API_KEY")
+        # 获取可用模型列表
+        available_models = get_available_models(manufacturer)
+        model_info["model_name"] = st.sidebar.selectbox(
+            f"Select {manufacturer} Model",
+            available_models
+        )
+        
+        # 获取API密钥（如果需要）
+        if manufacturer in ["OpenAI", "DeepSeek"]:
+            api_key = get_api_key(manufacturer)
             if not api_key:
                 api_key = st.sidebar.text_input(
-                    "Enter OpenAI API Key:",
+                    f"Enter {manufacturer} API Key:",
                     type="password"
                 )
-            model_info.update({
-                "model_name": st.sidebar.selectbox(
-                    "Select OpenAI Model",
-                    ["gpt-4", "gpt-3.5-turbo", "gpt-4o"]
-                ),
-                "api_key": api_key
-            })
-        elif manufacturer == "DeepSeek":
-            api_key = os.getenv("DEEPSEEK_API_KEY")
-            if not api_key:
-                api_key = st.sidebar.text_input(
-                    "Enter DeepSeek API Key:",
-                    type="password"
-                )
-            model_info.update({
-                "model_name": "deepseek-chat",
-                "api_key": api_key
-            })
+            model_info["api_key"] = api_key
         
         return model_info
 
